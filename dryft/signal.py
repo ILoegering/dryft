@@ -93,7 +93,7 @@ def findgoodaerial(stance_begin, stance_end, good_stances):
         aerial_end[bs[y]] = False
         bs = bs[bs != len(good_stances)-1]
 
-    if bs:
+    if len(bs) > 0:
         # remove earial phases for bad stances that are not the first/last ones:
         aerial_end[bs[0]] = False
         aerial_end[bs[0] + 1] = False
@@ -229,7 +229,7 @@ def splitsteps(vGRF, threshold, Fs, min_tc, max_tc, plot=False):
             print('Out of', stance_len.shape[0], 'stance phases,', sum(stance_len < min_tc*Fs), ' < ',
                   min_tc, 'seconds.')
         if np.any(stance_len > max_tc*Fs):
-            print('Out of', stance_len.shape[0], 'stance_phases,', sum(stance_len > max_tc*Fs), ' > ',
+            print('Out of', stance_len.shape[0], 'stance phases,', sum(stance_len > max_tc*Fs), ' > ',
                   max_tc, 'seconds.')
         # print sizes
         print('Total number of contact time begin/end:', stance_begin_all.shape[0], stance_end_all.shape[0])
