@@ -46,7 +46,8 @@ def detrend(force_f, aerial, aerial_loc):
     drift_signal[aerial_loc] = aerial
     # Use 3rd order spline to fill NaNs, creating the underlying drift of the signal.
     drift_signal_p = pd.Series(drift_signal)
-    drift_signal_p = drift_signal_p.interpolate(method = 'spline', order = 3, s = 0, limit_direction= 'both')
+    drift_signal_p = drift_signal_p.interpolate(method = 'spline', order = 3, s = 0, limit_direction= 'neither')
+    drift_signal_p = drift_signal_p.ffill().bfill()
     drift_signal = drift_signal_p.to_numpy()
     # Subtract drift from force signal
     force_fd = force_f - drift_signal
