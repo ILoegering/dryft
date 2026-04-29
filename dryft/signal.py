@@ -10,6 +10,7 @@ Distributed here: https://github.com/alcantarar/dryft
 
 
 """
+from functools import partial
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -250,7 +251,7 @@ def splitsteps(vGRF, threshold, Fs, min_tc, max_tc, verbose=True, plot=False):
     else:
         raise IndexError('Did not ID stance phases: min_tc > max_tc.')
 
-def splitsteps_dynamic_threshold(vGRF, threshold_quantile=0.5, Fs=2000, min_tc=0.14, max_tc=0.4, quantile_step=0.001, target_events=None, plot=False):
+def splitsteps_dynamic_threshold(vGRF, threshold_quantile=0.5, Fs=2000, min_tc=0.14, max_tc=0.4, quantile_step=0.001, target_events=None, verbose=True, plot=False):
     # Calculate threshold
     threshold = np.quantile(vGRF, threshold_quantile)
     # Perform step event detection
@@ -270,11 +271,13 @@ def splitsteps_dynamic_threshold(vGRF, threshold_quantile=0.5, Fs=2000, min_tc=0
         raise ThresholdError(error_message)
     # First iteration or no increase in events, continue optimizing threshold
     try:
-        return splitsteps_dynamic_threshold(vGRF, threshold_quantile=threshold_quantile - quantile_step, Fs=Fs, min_tc=min_tc, max_tc=max_tc, quantile_step=quantile_step, target_events=num_events, plot=plot)
+        drop_threshold = partial(splitsteps_dynamic_threshold, vGRF=vGRF, Fs=Fs, min_tc=min_tc, max_tc=max_tc, quantile_step=quantile_step, verbose=verbose, plot=plot)
+        return drop_threshold(threshold_quantile=threshold_quantile - quantile_step, target_events=num_events)
     # Optimized threshold found
     except ThresholdError:
         precision = np.quantile(vGRF, threshold_quantile + quantile_step) - threshold
-        print(f"Optimal threshold: {threshold:.2f} (within {precision:.2f}) N, with {len(step_begin_all)} steps detected.")
+        if verbose:
+            print(f"Optimal threshold: {threshold:.2f} (within {precision:.2f}) N, with {len(step_begin_all)} steps detected.")
         if plot:
             events = np.zeros_like(vGRF)
             events[step_begin_all] = 1
